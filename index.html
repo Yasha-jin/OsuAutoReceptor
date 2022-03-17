@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">    
+
+  <head>
+    <meta charset="utf-8">
+    <title>osu Receptor</title>
+
+    <link rel="stylesheet" href="css/styles.css">
+
+    <script src="js/jszip.min.js"></script>
+    <script src="js/stat_FileSaver.min.js"></script>
+    
+    <script type="text/javascript">
+
+        function previewFiles() {
+            var preview = document.querySelector('#preview');
+            var files = document.querySelector('input[type=file]').files;
+            preview.innerHTML = "";
+
+            function readAndPreview(file) {
+
+                // Make sure `file.name` matches our extensions criteria
+                if ( /\.(jpe?g|png)$/i.test(file.name) ) {
+                    var reader = new FileReader();
+
+                    reader.addEventListener("load", function () {
+                        var image = new Image();
+                        image.height = 100;
+                        image.title = file.name;
+                        image.src = this.result;
+                        preview.appendChild( image );
+                    }, false);
+
+                    reader.readAsDataURL(file);
+                }
+
+            }
+
+            if (files) {
+                [].forEach.call(files, readAndPreview);
+            }
+        }
+
+        function ConvertReceptor() {
+            var body = document.querySelector('#Convert');
+            body.innerHTML = "";
+
+            var files = document.querySelector('input[type=file]').files;
+            var images = [];
+            var counter = 0;
+
+            ReceptorImage = document.getElementById("Receptor");
+            Columnsize = document.getElementById("ColumnSize").value;
+            Hitposition = document.getElementById("HitPosition").value;
+
+            function readAndDraw(file) {
+                if ( /\.(jpe?g|png)$/i.test(file.name) ) {
+                    var reader = new FileReader();
+
+                    reader.addEventListener("load", function () {
+                        var image = new Image();
+                        image.title = file.name;
+                        image.src = this.result;
+
+                        var canvas = document.createElement("canvas");
+                        canvas.width = image.width;
+                        canvas.height = 768;
+
+                        var ctx = canvas.getContext("2d");
+                        ctx.drawImage(
+                            image,
+                            0, 0, // beginning of the image we grab
+                            image.width, image.height, // end of the image we grab
+                            0, (Hitposition * 1.6) - (Columnsize * 1.6), // Move the position of the image
+                            image.width, Columnsize * 1.6 // set the size of the image
+                        );
+
+                        // Preview the result
+                        // var Result = new Image();
+                        // Result.src = canvas.toDataURL();
+                        // body.appendChild(Result);
+
+                        convertImgToBase64URL(canvas.toDataURL(), function (base64Img, url) {
+                            images.push({
+                            url: url,
+                            data: base64Img,
+                            name: file.name
+                            });
+                            counter++;
+
+                            if (counter == files.length) {
+                                createArchive(images);
+                            }
+                        });
+
+                    }, false);
+
+                    reader.readAsDataURL(file);
+                }
+
+            }
+
+            if (files) {
+                [].forEach.call(files, readAndDraw);
+            }
+        }
+
+        function convertImgToBase64URL(url, callback){
+            var img = new Image();
+            img.crossOrigin = 'Anonymous';
+            img.onload = function(){
+                var canvas = document.createElement('CANVAS'),
+                ctx = canvas.getContext('2d'), dataURL;
+                canvas.height = this.height;
+                canvas.width = this.width;
+                ctx.drawImage(this, 0, 0);
+                dataURL = canvas.toDataURL();
+
+                callback(dataURL, url);
+                canvas = null;
+            };
+            img.src = url;
+        }
+
+        function createArchive(images){
+            var zip = new JSZip();
+            var img = zip.folder("images");
+
+            for (var i=0; i < images.length; i++) {
+                var commaIdx = images[i].data.indexOf(",");
+                img.file(images[i].name, images[i].data.slice(commaIdx + 1), {base64: true});
+            }
+
+            zip.generateAsync({type:"blob"}).then(function(file) {
+                saveAs(file, "images.zip");
+            })
+        }
+
+    </script>
+
+  </head>
+
+  <body>
+
+    <center>
+        <input id="browse" type="file" onchange="previewFiles()" multiple>
+        <div id="preview"></div>
+
+        <div id="columnsize">
+            <label for="ColumnSize">ColumnSize (1 - 100):</label>
+            <input type="number" id="ColumnSize" name="ColumnSize" min="1" max="100">
+        </div>
+
+        <div id="hitposition">
+            <label for="HitPosition">HitPosition (0 - 480):</label>
+            <input type="number" id="HitPosition" name="HitPosition" min="0" max="480">
+        </div>
+        
+        <button type="button" onclick="ConvertReceptor()">Generate Archives</button>
+
+        <div id="Convert"></div>
+    </center>
+    
+  </body>
+
+</html>
