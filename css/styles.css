@@ -2,10 +2,10 @@ body {
     background-color: powderblue;
     margin: 0;
     position: absolute;
-    top: 15%;
+    top: 5%;
     left: 50%;
-    -ms-transform: translateY(-15%);
-    transform: translateY(-15%);
+    -ms-transform: translateY(-5%);
+    transform: translateY(-5%);
     -ms-transform: translateX(-50%);
     transform: translateX(-50%);
 }
@@ -16,4 +16,13 @@ div {
 
 #Keystyle {
     margin-bottom: 8px;
+}
+
+hr {
+    margin-top: 64px;
+    margin-bottom: 64px;
+}
+
+#browseStretch {
+    margin-bottom: 32px;
 }

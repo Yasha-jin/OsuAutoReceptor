@@ -13,8 +13,8 @@
     <script type="text/javascript">
 
         function previewFiles() {
-            var preview = document.querySelector('#preview');
-            var files = document.querySelector('input[type=file]').files;
+            var preview = document.querySelector("#preview");
+            var files = document.querySelector("input[type=file]").files;
             preview.innerHTML = "";
 
             function readAndPreview(file) {
@@ -47,14 +47,13 @@
         }
 
         function ConvertReceptor() {
-            var body = document.querySelector('#Convert');
+            var body = document.querySelector("#Convert");
             body.innerHTML = "";
 
-            var files = document.querySelector('input[type=file]').files;
+            var files = document.getElementById("browse").files;
             var images = [];
             var counter = 0;
 
-            ReceptorImage = document.getElementById("Receptor");
             Columnsize = document.getElementById("ColumnSize").value;
             Hitposition = document.getElementById("HitPosition").value;
 
@@ -125,6 +124,63 @@
             }
         }
 
+        function ConvertStretchedReceptor() {
+            var files = document.getElementById("browseStretch").files;
+            var images = [];
+            var counter = 0;
+
+            OldHitposition = document.getElementById("OriginalHitPosition").value * 1.6;
+            NewHitposition = document.getElementById("NewHitPosition").value * 1.6;
+
+            function readAndDraw(file) {
+                if ( /\.(jpe?g|png)$/i.test(file.name) ) {
+                    var reader = new FileReader();
+
+                    reader.addEventListener("load", function () {
+                        var image = new Image();
+                        image.title = file.name;
+                        image.src = this.result;
+
+                        var canvas = document.createElement("canvas");
+                        canvas.width = image.width;
+                        canvas.height = 768;
+
+                        var HeightDifference = 768 - image.height;
+
+                        var ctx = canvas.getContext("2d");
+                        ctx.drawImage(
+                            image,
+                            0, 0, // beginning of the image we grab
+                            image.width, image.height, // end of the image we grab
+                            0, HeightDifference + (NewHitposition - OldHitposition), // Move the position of the image
+                            image.width, image.height // set the size of the image
+                        );
+
+                        convertImgToBase64URL(canvas.toDataURL(), function (base64Img, url) {
+                            images.push({
+                            url: url,
+                            data: base64Img,
+                            name: file.name
+                            });
+                            counter++;
+
+                            if (counter == files.length) {
+                                createArchive(images);
+                            }
+                        });
+
+                    }, false);
+
+                    reader.readAsDataURL(file);
+                }
+
+            }
+
+            if (files) {
+                [].forEach.call(files, readAndDraw);
+            }
+        }
+
         function convertImgToBase64URL(url, callback){
             var img = new Image();
             img.crossOrigin = 'Anonymous';
@@ -163,6 +219,7 @@
   <body>
 
     <center>
+        <h1>Receptor Converter</h1>
         <input id="browse" type="file" onchange="previewFiles()" multiple>
         <div id="preview"></div>
 
@@ -191,6 +248,28 @@
         <button type="button" onclick="ConvertReceptor()">Generate Archives</button>
 
         <div id="Convert"></div>
+
+        <hr>
+
+        <h1>Stretched Receptor Changer</h1>
+        <h3 style="color: red">This section is specific to receptor image which as already been alterned/stretched for osu, therefore the possible actions are limited.</h3>
+        <ul>
+            <li>Can not change ColumnSize</li>
+            <li>Doesn't support receptor with lane cover</li>
+            <li>Might or mightn't be fully implemented yet, so might or mightn't work as aspected.</li>
+        </ul>
+        
+        <input id="browseStretch" type="file" multiple>
+
+        <div id="hitpositionStretched">
+            <label for="OriginalHitPosition">OriginalHitPosition (0 - 480):</label>
+            <input type="number" id="OriginalHitPosition" name="OriginalHitPosition" min="0" max="480">
+            <br>
+            <label for="NewHitPosition">NewHitPosition (0 - 480):</label>
+            <input type="number" id="NewHitPosition" name="NewHitPosition" min="0" max="480">
+        </div>
+
+        <button type="button" onclick="ConvertStretchedReceptor()">Generate Archives</button>
     </center>
     
   </body>
