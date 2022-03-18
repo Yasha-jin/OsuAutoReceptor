@@ -25,10 +25,15 @@
 
                     reader.addEventListener("load", function () {
                         var image = new Image();
-                        image.height = 100;
+                        
                         image.title = file.name;
                         image.src = this.result;
                         preview.appendChild( image );
+
+                        var KeyAutoHeight = image.height / (image.width / document.getElementById("ColumnSize").value);
+                        document.getElementById("MaxBottom2").innerHTML = "Useful if using KeyStyle, also this bypass the HitPosition value, therefore if you use receptor the HitPosition is 480, and for Key it is " + (480 - Math.round(KeyAutoHeight));
+
+                        image.height = 100;
                     }, false);
 
                     reader.readAsDataURL(file);
@@ -53,6 +58,9 @@
             Columnsize = document.getElementById("ColumnSize").value;
             Hitposition = document.getElementById("HitPosition").value;
 
+            var ImagePosition = (Hitposition * 1.6) - (Columnsize * 1.6);
+            var ImageSizeHeight = Columnsize * 1.6;
+
             function readAndDraw(file) {
                 if ( /\.(jpe?g|png)$/i.test(file.name) ) {
                     var reader = new FileReader();
@@ -66,18 +74,30 @@
                         canvas.width = image.width;
                         canvas.height = 768;
 
+                        if (document.getElementById("KeyStyle").checked) {
+                            ImagePosition = (Hitposition * 1.6);
+                            var KeyAutoHeight = image.height / (image.width / Columnsize);
+                            ImageSizeHeight = KeyAutoHeight * 1.6;
+                        }
+
+                        if (document.getElementById("MaxBottom").checked) {
+                            ImagePosition = 768 - ImageSizeHeight;
+                        }
+
+
                         var ctx = canvas.getContext("2d");
                         ctx.drawImage(
                             image,
                             0, 0, // beginning of the image we grab
                             image.width, image.height, // end of the image we grab
-                            0, (Hitposition * 1.6) - (Columnsize * 1.6), // Move the position of the image
-                            image.width, Columnsize * 1.6 // set the size of the image
+                            0, ImagePosition, // Move the position of the image
+                            image.width, ImageSizeHeight // set the size of the image
                         );
 
                         // Preview the result
                         // var Result = new Image();
                         // Result.src = canvas.toDataURL();
+                        // Result.height = 240;
                         // body.appendChild(Result);
 
                         convertImgToBase64URL(canvas.toDataURL(), function (base64Img, url) {
@@ -154,6 +174,18 @@
         <div id="hitposition">
             <label for="HitPosition">HitPosition (0 - 480):</label>
             <input type="number" id="HitPosition" name="HitPosition" min="0" max="480">
+        </div>
+
+        <div id="Keystyle">
+            <label for="KeyStyle">KeyStyle ? (note stop on top of receptor)</label>
+            <input type="checkbox" id="KeyStyle" name="KeyStyle">
+        </div>
+
+        <div id="Maxbottom">
+            <label for="MaxBottom">Want the receptor to automatically be at the max bottom ? (or top if upscroll)</label>
+            <input type="checkbox" id="MaxBottom" name="MaxBottom">
+            <br>
+            <label for="MaxBottom2" id="MaxBottom2" style="font-size: 12px">Useful if using KeyStyle, also this bypass the HitPosition value, therefore if you use receptor the HitPosition is 480, and for Key it is MATH (select image first)</label>
         </div>
         
         <button type="button" onclick="ConvertReceptor()">Generate Archives</button>

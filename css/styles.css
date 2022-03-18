@@ -2,14 +2,18 @@ body {
     background-color: powderblue;
     margin: 0;
     position: absolute;
-    top: 30%;
+    top: 15%;
     left: 50%;
-    -ms-transform: translateY(-30%);
-    transform: translateY(-30%);
+    -ms-transform: translateY(-15%);
+    transform: translateY(-15%);
     -ms-transform: translateX(-50%);
     transform: translateX(-50%);
 }
 
 div {
     margin-bottom: 32px;
+}
+
+#Keystyle {
+    margin-bottom: 8px;
 }
