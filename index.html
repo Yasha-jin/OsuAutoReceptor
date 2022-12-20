@@ -69,6 +69,10 @@
                         image.title = file.name;
                         image.src = this.result;
 
+                        var Ratio = image.height / image.width;
+                        ImagePosition = (Hitposition * 1.6) - (Columnsize * Ratio * 1.6);
+                        ImageSizeHeight = Columnsize * Ratio * 1.6;
+
                         var canvas = document.createElement("canvas");
                         canvas.width = image.width;
                         canvas.height = 768;
@@ -256,7 +260,6 @@
         <ul>
             <li>Can not change ColumnSize</li>
             <li>Doesn't support receptor with lane cover</li>
-            <li>Might or mightn't be fully implemented yet, so might or mightn't work as aspected.</li>
         </ul>
         
         <input id="browseStretch" type="file" multiple>
